@@ -15,23 +15,15 @@
 #include <iomanip>
 #include <vector>
 
-#include <string.h>
-#include <sstream> //for stringstream
-#include <algorithm>
-
-
 typedef unsigned char uint8;
 typedef unsigned int uint32;
 typedef int int32;
 typedef short int16;
 typedef unsigned short uint16;
 
-
 class BER_TLV_Parser
 {
-
 private:
-
   int parser(std::vector<uint8> data,int32 primitive);
   std::vector<uint8> prvdata;
 
@@ -70,23 +62,17 @@ public:
 int BER_TLV_Parser::lets_parse()
 {
   parser(prvdata, -1);
-
   std::cout<<"\n\nparsing done\n";
 }
 
 int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
 {
-    //  std::cout<<"\nin parser :";
-
-      int T_start=0;
       int T_end=0;
       int L_start=0;
       int L_end=0;
-      int V_start=0;
+      int =V_start0;
       int V_end=-1;
-      
       int isprimitive = 0;
-
       size_t packet_length = 0;
 
       std::vector<uint8>::iterator iter = data.begin();
@@ -97,8 +83,6 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
           return 0;
       }
     
-    // while(ret<(data.size()+1))
-    // {
       /************* TAG *************/
       {
           //skip this if incoming is not BER (SIMPLE TLV)
@@ -112,7 +96,7 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
           {
             //primitive
             isprimitive = 1;
-          std::cout<<"\n[primitive]  : ";
+            std::cout<<"\n[primitive]  : ";
           }
 
           iter = data.begin();
@@ -121,22 +105,18 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
             //bit 1-5 set to 1 : 2 or more bytes tag
             std::cout<<" TAG= "<<std::setfill('0') << std::setw(2)<< (int)data.at(0);
             iter++;
-            
                 for( ;iter!=data.end();iter++)
                 {                  
 			            //TBD : Compute Tag here TAGBYTE2_CHECKBITTAG of each byte
-
                   std::cout<<std::setfill('0') << std::setw(2)<< (int)*iter;
                   T_end++;
                   if( (*iter&TAGBYTE2_CHECKBIT8)==1)
                   {
-
                   }
                   else
                   {
                     //Tag ends
-                    break;
-			    
+                    break;			    
                   }
                 }	      
           }
@@ -171,9 +151,7 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
             L_end = L_start;
             packet_length = data.at(L_start);//(uint16) (((data.at(L_start)&0x7F)<<8)|at(L_end))
           }
-	      
           std::cout<<" length= "<<std::setfill('0') << std::setw(2)<<packet_length;
-
           //validate length
           V_start = L_end+1;
           if(packet_length==0 || data.size()<=(L_end+1))
@@ -185,7 +163,6 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
           {
                return L_end+1;
           }
-
       }
       V_end = V_start+packet_length-1;
 
@@ -193,7 +170,6 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
       {
               std::cout<<"\nError : Invalid length something wrong\n"<<L_end;
                return 0;
-
       }
       /************* VALUE *************/
       int tot_bytes_processed=0;
@@ -205,9 +181,7 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
           {
               std::cout<<std::setfill('0') << std::setw(2)<<(int)*it<<" ";
           }
-
-
-     //xx std::cout<<"\nreturning  1 = "<<V_end+1;
+          //xx std::cout<<"\nreturning  1 = "<<V_end+1;
           return V_end+1;
         }
 
@@ -216,21 +190,16 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
         {
             int ret=0;
             std::vector<uint8> dummyvec{data};
-            
-         //xx   std::cout<<"\n V_start+len_processed="<<(V_start+len_processed)<<" Vec size ="<<data.size();
-
+            //xx   std::cout<<"\n V_start+len_processed="<<(V_start+len_processed)<<" Vec size ="<<data.size();
             dummyvec.erase(dummyvec.begin(),dummyvec.begin()+V_start+len_processed);
-       //xx     std::cout<<" - new Vec size ="<<dummyvec.size();
-            ret = parser(dummyvec,isprimitive);
-            
-          //xx  std::cout<<"\n new ret value ="<<ret<<"  prev processed ="<<len_processed;
+            ret = parser(dummyvec,isprimitive);  //Recursive Call          
+           //xx  std::cout<<"\n new ret value ="<<ret<<"  prev processed ="<<len_processed;
             if(ret==0)
             {
-              //return 0;
               break;
             }
             len_processed += ret;
-        //xx    std::cout<<"\nlen_processed ="<<len_processed<<"  of packet_length ="<<packet_length<< " of Vec size ="<<data.size();;
+           //xx std::cout<<"\nlen_processed ="<<len_processed<<"  of packet_length ="<<packet_length<< " of Vec size ="<<data.size();;
            //xx std::cout<<"\n Remaining bytes to process : "<<packet_length-len_processed;
             if(len_processed>packet_length)
             {
@@ -239,20 +208,13 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
             }
         }
         tot_bytes_processed = V_start+len_processed;
-
       }
-
     //xx  std::cout<<"\nreturning  2 = "<<tot_bytes_processed;
-
       return tot_bytes_processed;
-
-      
-    //}
 }
 
 int main()
 {
-
 
   std::vector<uint8> indata = <put data here>;
 
