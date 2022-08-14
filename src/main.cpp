@@ -41,7 +41,7 @@ public:
     }
 
     BER_TLV_Parser(std::vector<uint8> in): prvdata { in }{
-      std::cout<<"\nsize = "<<prvdata.size();
+      std::cout<<"\nInput Data Size = "<<prvdata.size();
     }
 
     ~BER_TLV_Parser(){
@@ -54,6 +54,7 @@ public:
       {
         std::cout<<std::setfill('0') << std::setw(2)<<std::hex<<(int)ref<<" ";
       }
+        std::cout<<"\n\n";
     }
 
     int lets_parse();
@@ -105,13 +106,13 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
           {
             //constructed
             isprimitive = 0;
-            std::cout<<"\n******************constructed: ";
+            std::cout<<"\n[constructed]: ";
           }
           else
           {
             //primitive
             isprimitive = 1;
-          std::cout<<"\n********************primitive: ";
+          std::cout<<"\n[primitive]  : ";
           }
 
           iter = data.begin();
@@ -206,7 +207,7 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
           }
 
 
-      std::cout<<"\nreturning  1 = "<<V_end+1;
+     //xx std::cout<<"\nreturning  1 = "<<V_end+1;
           return V_end+1;
         }
 
@@ -216,24 +217,24 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
             int ret=0;
             std::vector<uint8> dummyvec{data};
             
-            std::cout<<"\n V_start+len_processed="<<(V_start+len_processed)<<" Vec size ="<<data.size();
+         //xx   std::cout<<"\n V_start+len_processed="<<(V_start+len_processed)<<" Vec size ="<<data.size();
 
             dummyvec.erase(dummyvec.begin(),dummyvec.begin()+V_start+len_processed);
-            std::cout<<" - new Vec size ="<<dummyvec.size();
+       //xx     std::cout<<" - new Vec size ="<<dummyvec.size();
             ret = parser(dummyvec,isprimitive);
             
-            std::cout<<"\n new ret value ="<<ret<<"  prev processed ="<<len_processed;
+          //xx  std::cout<<"\n new ret value ="<<ret<<"  prev processed ="<<len_processed;
             if(ret==0)
             {
               //return 0;
               break;
             }
             len_processed += ret;
-            std::cout<<"\nlen_processed ="<<len_processed<<"  of packet_length ="<<packet_length<< " of Vec size ="<<data.size();;
-            std::cout<<"\n Remaining bytes to process : "<<packet_length-len_processed;
+        //xx    std::cout<<"\nlen_processed ="<<len_processed<<"  of packet_length ="<<packet_length<< " of Vec size ="<<data.size();;
+           //xx std::cout<<"\n Remaining bytes to process : "<<packet_length-len_processed;
             if(len_processed>packet_length)
             {
-              std::cout<<"\nError : Length info\n"<<L_end;
+             //xx std::cout<<"\nError : Length info\n"<<L_end;
               break;
             }
         }
@@ -241,7 +242,7 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
 
       }
 
-      std::cout<<"\nreturning  2 = "<<tot_bytes_processed;
+    //xx  std::cout<<"\nreturning  2 = "<<tot_bytes_processed;
 
       return tot_bytes_processed;
 
