@@ -90,7 +90,7 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
 
       std::vector<uint8>::iterator iter = data.begin();
 
-      if(data.size()==0 || data.at(0)==0x00 || data.at(0)==0xFF)
+      if(data.size()<2 || data.at(0)==0x00 || data.at(0)==0xFF)
       {
           std::cout<<"\nError : Invalid packet header\n";
           return 0;
@@ -98,7 +98,6 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
     
     // while(ret<(data.size()+1))
     // {
-      T_start = V_end+1;
       /************* TAG *************/
       {
           //skip this if incoming is not BER (SIMPLE TLV)
@@ -106,13 +105,13 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
           {
             //constructed
             isprimitive = 0;
-            std::cout<<"\nconstructed: ";
+            std::cout<<"\n******************constructed: ";
           }
           else
           {
             //primitive
             isprimitive = 1;
-          std::cout<<"\nprimitive: ";
+          std::cout<<"\n********************primitive: ";
           }
 
           iter = data.begin();
@@ -138,8 +137,7 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
                     break;
 			    
                   }
-                }
-	      
+                }	      
           }
           else
           {
@@ -170,7 +168,7 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
           {
             iter++;
             L_end = L_start;
-            packet_length = (uint16)data.at(L_start);//(uint16) (((data.at(L_start)&0x7F)<<8)|at(L_end))
+            packet_length = data.at(L_start);//(uint16) (((data.at(L_start)&0x7F)<<8)|at(L_end))
           }
 	      
           std::cout<<" length= "<<std::setfill('0') << std::setw(2)<<packet_length;
@@ -184,13 +182,20 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
           }
           else if(packet_length==0)
           {
-               return 0;
+               return L_end+1;
           }
 
       }
       V_end = V_start+packet_length-1;
 
+      if(V_end>data.size())
+      {
+              std::cout<<"\nError : Invalid length something wrong\n"<<L_end;
+               return 0;
+
+      }
       /************* VALUE *************/
+      int tot_bytes_processed=0;
       {
         if(primitive==1 || ((primitive !=-1) && (isprimitive==1)))
         {
@@ -206,33 +211,39 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
         }
 
         int len_processed=0;
-        while(len_processed<packet_length)
+        while(((int)len_processed)<((int)packet_length))
         {
             int ret=0;
             std::vector<uint8> dummyvec{data};
             
             std::cout<<"\n V_start+len_processed="<<(V_start+len_processed)<<" Vec size ="<<data.size();
-            
-
 
             dummyvec.erase(dummyvec.begin(),dummyvec.begin()+V_start+len_processed);
             std::cout<<" - new Vec size ="<<dummyvec.size();
             ret = parser(dummyvec,isprimitive);
+            
+            std::cout<<"\n new ret value ="<<ret<<"  prev processed ="<<len_processed;
             if(ret==0)
             {
-              return 0;
-              //break;
+              //return 0;
+              break;
             }
             len_processed += ret;
             std::cout<<"\nlen_processed ="<<len_processed<<"  of packet_length ="<<packet_length<< " of Vec size ="<<data.size();;
+            std::cout<<"\n Remaining bytes to process : "<<packet_length-len_processed;
+            if(len_processed>packet_length)
+            {
+              std::cout<<"\nError : Length info\n"<<L_end;
+              break;
+            }
         }
-        V_end=len_processed+1;
+        tot_bytes_processed = V_start+len_processed;
 
       }
 
-      std::cout<<"\nreturning  2 = "<<V_end+1;
+      std::cout<<"\nreturning  2 = "<<tot_bytes_processed;
 
-      return V_end+1;
+      return tot_bytes_processed;
 
       
     //}
@@ -240,6 +251,7 @@ int BER_TLV_Parser::parser(std::vector<uint8> data, int32 primitive)
 
 int main()
 {
+
 
   std::vector<uint8> indata = <put data here>;
 
